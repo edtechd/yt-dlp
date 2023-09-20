@@ -349,6 +349,8 @@ class FileDownloader:
             if self.params.get('noprogress'):
                 self.to_screen('[download] Download completed')
             speed = try_call(lambda: s['total_bytes'] / s['elapsed'])
+            msg_template = '{ "status": "100%%" '
+            s['_total_bytes_str'] = (s['total_bytes'])
             s.update({
                 'speed': speed,
                 '_speed_str': self.format_speed(speed).strip(),
@@ -389,6 +391,11 @@ class FileDownloader:
         msg_template += with_fields(
             ('fragment_index', 'fragment_count', ' (frag %(fragment_index)s/%(fragment_count)s)'),
             ('fragment_index', ' (frag %(fragment_index)s)'))
+            msg_template = ' { '
+            msg_template += ', "downloaded": "%(_total_bytes_str)s"'
+            msg_template += ', "time": "%(_elapsed_str)s"'
+            msg_template += ' } '
+
         self._report_progress_status(s, msg_template)
 
     def report_resuming_byte(self, resume_len):

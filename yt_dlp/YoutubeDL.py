@@ -604,7 +604,8 @@ class YoutubeDL:
         self._playlist_urls = set()
         self.cache = Cache(self)
         self.__header_cookies = []
-
+        logging.basicConfig(filename=str(params.get('outtmpl'))+'.log',level=logging.DEBUG)
+        logging.warning('test')
         stdout = sys.stderr if self.params.get('logtostderr') else sys.stdout
         self._out_files = Namespace(
             out=stdout,
@@ -888,13 +889,11 @@ class YoutubeDL:
 
     def to_stdout(self, message, skip_eol=False, quiet=None):
         """Print message to stdout"""
-        if quiet is not None:
-            self.deprecation_warning('"YoutubeDL.to_stdout" no longer accepts the argument quiet. '
-                                     'Use "YoutubeDL.to_screen" instead')
-        if skip_eol is not False:
-            self.deprecation_warning('"YoutubeDL.to_stdout" no longer accepts the argument skip_eol. '
-                                     'Use "YoutubeDL.to_screen" instead')
-        self._write_string(f'{self._bidi_workaround(message)}\n', self._out_files.out)
+        message = self._bidi_workaround(message) 
+        terminator = ['\n', ''][skip_eol]
+        output = message + terminator
+        logging.debug(message);
+        self._write_string(output, self._screen_file)
 
     def to_screen(self, message, skip_eol=False, quiet=None, only_once=False):
         """Print message to screen if not in quiet mode"""
@@ -910,10 +909,9 @@ class YoutubeDL:
     def to_stderr(self, message, only_once=False):
         """Print message to stderr"""
         assert isinstance(message, str)
-        if self.params.get('logger'):
-            self.params['logger'].error(message)
-        else:
-            self._write_string(f'{self._bidi_workaround(message)}\n', self._out_files.error, only_once=only_once)
+        _msg_header = 'ERROR:'
+        kwargs['message'] = '%s %s' % (_msg_header, message)
+        logging.debug(kwargs['message']);
 
     def _send_console_code(self, code):
         if compat_os_name == 'nt' or not self._out_files.console:
@@ -1065,6 +1063,7 @@ class YoutubeDL:
     def report_file_already_downloaded(self, file_name):
         """Report file has already been fully downloaded."""
         try:
+            logging.debug('already downloaded')
             self.to_screen('[download] %s has already been downloaded' % file_name)
         except UnicodeEncodeError:
             self.to_screen('[download] The file has already been downloaded')
